@@ -389,7 +389,7 @@
 
             </div>
             
-            <div class="absolute bottom-48 bg-black/80 px-6 py-2 rounded-full text-xs font-mono text-purple-400 border border-slate-700 shadow-lg z-20">
+            <div class="absolute bottom-14 bg-black/80 px-6 py-2 rounded-full text-xs font-mono text-purple-400 border border-slate-700 shadow-lg z-20">
                 HEX: <span id="quadPacketHex">--</span>
             </div>
         </section>
@@ -1191,7 +1191,7 @@
         });
 
         var workspace = Blockly.inject('blocklyDiv', {
-            toolbox: document.getElementById('toolbox'), theme: CustomTheme, renderer: 'zelos', horizontalLayout: true, toolboxPosition: 'end', grid: { spacing: 50, length: 3, colour: '#475569', snap: true }, zoom: { controls: false, wheel: true, startScale: 0.65, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2, pinch: true }, trashcan: false, move: { scrollbars: false, drag: true, wheel: true }
+            toolbox: document.getElementById('toolbox'), theme: CustomTheme, renderer: 'zelos', horizontalLayout: true, toolboxPosition: 'end', grid: { spacing: 50, length: 3, colour: '#475569', snap: true }, zoom: { controls: false, wheel: true, startScale: 0.65, maxScale: 10, minScale: 0.1, scaleSpeed: 1.2, pinch: true }, trashcan: false, move: { scrollbars: false, drag: true, wheel: true }
         });
         
         setTimeout(() => {
