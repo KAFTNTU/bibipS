@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RoboControl Car (Final Refined)</title>
+    <title>RoboControl Car (Final UI)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -82,11 +82,11 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
 
-        /* --- QUAD JOYSTICK (REVERTED TO 140px & CENTERED) --- */
+        /* --- QUAD JOYSTICK --- */
         .joy-quad-wrapper { display: flex; flex-direction: column; gap: 30px; align-items: center; }
         .joy-quad-label { font-size: 14px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
         
-        /* 140px (Reverted) */
+        /* 140px */
         .joy-quad-container { width: 140px; height: 140px; position: relative; }
         
         .joy-quad-base { 
@@ -102,11 +102,11 @@
             background: rgba(255,255,255,0.05); transform: translateX(-50%);
         }
         
-        /* 56px (Reverted) */
+        /* 56px */
         .joy-quad-stick { position: absolute; width: 56px; height: 56px; background: radial-gradient(circle at 30% 30%, #a855f7, #7e22ce); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; pointer-events: none; }
         .joy-quad-stick.snap { transition: transform 0.2s; }
 
-        /* --- BLOCKLY (FIXED BOTTOM) --- */
+        /* --- BLOCKLY --- */
         #blocklyDiv { 
             position: absolute; 
             top: 64px; 
@@ -122,38 +122,35 @@
         .blocklyTreeLabel { font-family: 'Segoe UI', sans-serif; font-weight: 700; font-size: 13px !important; }
         .blocklyToolboxDiv::-webkit-scrollbar, .blocklyFlyoutScrollbar, .blocklyScrollbarHandle, .blocklyScrollbarBackground, .blocklyZoom { display: none !important; }
 
-        /* --- SENSOR DASHBOARD (FIXED WRAPPING) --- */
+        /* --- SENSOR DASHBOARD (COMPACT & CENTERED) --- */
         .sensor-dashboard {
             position: absolute; 
-            top: 80px; 
-            left: 45%; /* Shifted left by 5% */
+            top: 75px; 
+            left: 50%; 
             transform: translateX(-50%);
             
-            width: 98%; /* Max width to prevent wrapping */
-            max-width: 600px;
+            width: fit-content;
+            min-width: 280px;
+            max-width: 95vw;
             
             background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(52, 211, 153, 0.3);
+            /* NO BORDER */
             border-radius: 12px;
-            padding: 6px 4px; /* Minimal padding */
+            
+            padding: 4px 12px; /* Smaller padding */
             display: flex; 
-            justify-content: space-evenly;
-            gap: 2px;
+            justify-content: center;
+            gap: 12px; /* Nicer gap */
             z-index: 30;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        .sensor-item { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-width: 60px; /* Ensure minimum width */
-        }
+        .sensor-item { display: flex; flex-direction: column; align-items: center; }
         .sensor-label { 
-            font-size: 9px; /* Smaller font */
+            font-size: 8px; /* Compact font */
             color: #94a3b8; 
             font-weight: bold; 
             text-transform: uppercase; 
-            white-space: nowrap; /* CRITICAL: Prevents line breaks */
+            white-space: nowrap; 
         }
         .sensor-value { font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; color: #34d399; }
 
@@ -343,17 +340,17 @@
              <div class="absolute top-0 w-full h-12 bg-slate-900/50 flex justify-between items-center px-6 border-b border-white/5 backdrop-blur-sm z-10">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
-                    <span class="text-xs text-purple-400 font-bold tracking-[0.2em] uppercase">4 Motor Control (ABCD)</span>
+                    <span class="text-xs text-purple-400 font-bold tracking-[0.2em] uppercase">4 Motor Control</span>
                 </div>
             </div>
 
             <!-- 4 JOYSTICK GRID -->
             <div class="w-full h-full flex items-center justify-center gap-8 px-4 pt-10">
                 
-                <!-- LEFT GROUP (A, C) -->
+                <!-- LEFT GROUP (M1, M3) -->
                 <div class="joy-quad-wrapper">
                     <div>
-                        <div class="joy-quad-label">Motor A</div>
+                        <div class="joy-quad-label">M1 (Перед)</div>
                         <div id="joy1-container" class="joy-quad-container">
                             <div id="joy1-base" class="joy-quad-base">
                                 <div id="joy1-stick" class="joy-quad-stick snap"></div>
@@ -361,7 +358,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="joy-quad-label">Motor C</div>
+                        <div class="joy-quad-label">M3 (Зад)</div>
                         <div id="joy3-container" class="joy-quad-container">
                             <div id="joy3-base" class="joy-quad-base">
                                 <div id="joy3-stick" class="joy-quad-stick snap"></div>
@@ -370,10 +367,10 @@
                     </div>
                 </div>
 
-                <!-- RIGHT GROUP (B, D) -->
+                <!-- RIGHT GROUP (M2, M4) -->
                 <div class="joy-quad-wrapper">
                     <div>
-                        <div class="joy-quad-label">Motor B</div>
+                        <div class="joy-quad-label">M2 (Перед)</div>
                         <div id="joy2-container" class="joy-quad-container">
                             <div id="joy2-base" class="joy-quad-base">
                                 <div id="joy2-stick" class="joy-quad-stick snap"></div>
@@ -381,7 +378,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="joy-quad-label">Motor D</div>
+                        <div class="joy-quad-label">M4 (Зад)</div>
                         <div id="joy4-container" class="joy-quad-container">
                             <div id="joy4-base" class="joy-quad-base">
                                 <div id="joy4-stick" class="joy-quad-stick snap"></div>
@@ -1194,7 +1191,7 @@
         });
 
         var workspace = Blockly.inject('blocklyDiv', {
-            toolbox: document.getElementById('toolbox'), theme: CustomTheme, renderer: 'zelos', horizontalLayout: true, toolboxPosition: 'end', grid: { spacing: 50, length: 3, colour: '#475569', snap: true }, zoom: { controls: false, wheel: true, startScale: 0.65, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2, pinch: true }, trashcan: true, move: { scrollbars: false, drag: true, wheel: true }
+            toolbox: document.getElementById('toolbox'), theme: CustomTheme, renderer: 'zelos', horizontalLayout: true, toolboxPosition: 'end', grid: { spacing: 50, length: 3, colour: '#475569', snap: true }, zoom: { controls: false, wheel: true, startScale: 0.65, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2, pinch: true }, trashcan: false, move: { scrollbars: false, drag: true, wheel: true }
         });
         
         setTimeout(() => {
@@ -1310,8 +1307,7 @@
         Blockly.Blocks['sensor_get'] = { 
             init: function() { 
                 this.appendDummyInput()
-                    .appendField(new Blockly.FieldImage("https://img.icons8.com/ios-glyphs/30/ffffff/sensor.png", 20, 20, "*"))
-                    .appendField(new Blockly.FieldDropdown([["📏", "DIST"], ["💡", "LIGHT"], ["👆", "TOUCH"]]), "TYPE")
+                    .appendField(new Blockly.FieldDropdown([["📏 Відстань", "DIST"], ["💡 Світло", "LIGHT"], ["👆 Дотик", "TOUCH"]]), "TYPE")
                     .appendField("Порт")
                     .appendField(new Blockly.FieldDropdown([["1","0"], ["2","1"], ["3","2"], ["4","3"]]), "SENS");
                 this.setOutput(true, "Number"); 
@@ -1436,3 +1432,4 @@
     </script>
 </body>
 </html>
+
