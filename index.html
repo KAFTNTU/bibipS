@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RoboControl Car (ABCD & Ports)</title>
+    <title>RoboControl Car (Variables Edition)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,6 +12,8 @@
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <!-- GENERATORS -->
     <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <!-- LANGUAGE -->
+    <script src="https://unpkg.com/blockly/msg/uk.js"></script>
 
     <style>
         /* --- GLOBAL STYLES --- */
@@ -487,13 +489,13 @@
                                                 <value name="R"><shadow type="math_number"><field name="NUM">-80</field></shadow></value>
                                                 <next>
                                                     <block type="wait_seconds">
-                                                        <field name="SECONDS">0.5</field>
+                                                        <value name="SECONDS"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value>
                                                         <next>
                                                             <block type="robot_move">
                                                                 <value name="L"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
                                                                 <value name="R"><shadow type="math_number"><field name="NUM">-100</field></shadow></value>
                                                                 <next>
-                                                                    <block type="wait_seconds"><field name="SECONDS">0.5</field></block>
+                                                                    <block type="wait_seconds"><value name="SECONDS"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value></block>
                                                                 </next>
                                                             </block>
                                                         </next>
@@ -508,7 +510,7 @@
                                         <value name="L"><shadow type="math_number"><field name="NUM">80</field></shadow></value>
                                         <value name="R"><shadow type="math_number"><field name="NUM">80</field></shadow></value>
                                         <next>
-                                            <block type="wait_seconds"><field name="SECONDS">0.1</field></block>
+                                            <block type="wait_seconds"><value name="SECONDS"><shadow type="math_number"><field name="NUM">0.1</field></shadow></value></block>
                                         </next>
                                     </block>
                                 </statement>
@@ -522,9 +524,25 @@
             <block type="start_hat">
                 <next>
                     <block type="wait_seconds">
-                        <field name="SECONDS">2</field>
+                        <value name="SECONDS"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
                         <next>
                             <block type="go_home"></block>
+                        </next>
+                    </block>
+                </next>
+            </block>
+
+            <!-- Збірка: Тест Змінної (NEW) -->
+            <block type="start_hat">
+                <next>
+                    <block type="variables_set">
+                        <field name="VAR">Швидкість</field>
+                        <value name="VALUE"><block type="math_number"><field name="NUM">50</field></block></value>
+                        <next>
+                            <block type="robot_move">
+                                <value name="L"><block type="variables_get"><field name="VAR">Швидкість</field></block></value>
+                                <value name="R"><block type="variables_get"><field name="VAR">Швидкість</field></block></value>
+                            </block>
                         </next>
                     </block>
                 </next>
@@ -546,26 +564,43 @@
                 <value name="SPEED"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
             </block>
             <block type="robot_stop"></block>
+            <block type="console_log">
+                <value name="MSG"><shadow type="text"><field name="TEXT">Привіт!</field></shadow></value>
+            </block>
         </category>
         <category name="🧠 Логіка" colour="%{BKY_LOGIC_HUE}">
             <block type="controls_if"></block>
             <block type="logic_compare"></block>
             <block type="logic_operation"></block>
+            <block type="logic_negate"></block>
             <block type="logic_boolean"></block>
             <block type="sensor_get"></block>
         </category>
         <category name="Цикли" colour="%{BKY_LOOPS_HUE}">
             <block type="controls_repeat_ext"><value name="TIMES"><shadow type="math_number"><field name="NUM">4</field></shadow></value></block>
             <block type="controls_whileUntil"></block>
+            <block type="controls_for">
+                <value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+                <value name="TO"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
+                <value name="BY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+            </block>
         </category>
         <category name="Математика" colour="%{BKY_MATH_HUE}">
             <block type="math_number"></block>
-            <block type="math_random_int"></block>
+            <block type="math_arithmetic"></block>
+            <block type="math_single"></block>
+            <block type="math_random_int">
+                <value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+                <value name="TO"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+            </block>
+            <block type="math_modulo"></block>
+            <block type="math_round"></block>
         </category>
         <category name="Час" colour="#FFBF00">
-            <block type="wait_seconds"><field name="SECONDS">1</field></block>
+            <block type="wait_seconds"><value name="SECONDS"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
             <block type="go_home"></block>
         </category>
+        <category name="Змінні" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
     </xml>
 
     <script>
@@ -1165,28 +1200,40 @@
         };
         javascript.javascriptGenerator.forBlock['start_hat'] = function(b) { return ''; };
 
-        Blockly.Blocks['robot_move'] = { init: function() { this.appendDummyInput().appendField("🚗 Їхати").appendField("L").appendField(new Blockly.FieldTextInput("100"), "L").appendField("R").appendField(new Blockly.FieldTextInput("100"), "R"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
+        // --- UPDATED BLOCK DEFINITIONS (ACCEPT VALUES/VARIABLES) ---
+        
+        Blockly.Blocks['robot_move'] = { 
+            init: function() { 
+                this.appendDummyInput().appendField("🚗 Їхати");
+                this.appendValueInput("L").setCheck("Number").appendField("L");
+                this.appendValueInput("R").setCheck("Number").appendField("R");
+                this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); 
+                // Default inputs shadows (so they look like text inputs initially)
+            } 
+        };
         javascript.javascriptGenerator.forBlock['robot_move'] = function(b) {
-            var l = b.getFieldValue('L'); var r = b.getFieldValue('R');
+            var l = javascript.javascriptGenerator.valueToCode(b, 'L', javascript.Order.ATOMIC) || '0';
+            var r = javascript.javascriptGenerator.valueToCode(b, 'R', javascript.Order.ATOMIC) || '0';
             return `recordMove(${l}, ${r}, ${l}, ${r}); await sendDrivePacket(${l}, ${r}, ${l}, ${r});\n`;
         };
         
         Blockly.Blocks['move_4_motors'] = { 
             init: function() { 
-                this.appendDummyInput()
-                    .appendField("🚙 4 Мотори (ABCD)")
-                    .appendField("A:").appendField(new Blockly.FieldTextInput("100"), "M1")
-                    .appendField("B:").appendField(new Blockly.FieldTextInput("100"), "M2")
-                    .appendField("C:").appendField(new Blockly.FieldTextInput("100"), "M3")
-                    .appendField("D:").appendField(new Blockly.FieldTextInput("100"), "M4");
+                this.appendDummyInput().appendField("🚙 4 Мотори (ABCD)");
+                this.appendValueInput("M1").setCheck("Number").appendField("A:");
+                this.appendValueInput("M2").setCheck("Number").appendField("B:");
+                this.appendValueInput("M3").setCheck("Number").appendField("C:");
+                this.appendValueInput("M4").setCheck("Number").appendField("D:");
                 this.setPreviousStatement(true); 
                 this.setNextStatement(true); 
                 this.setColour(260); 
             } 
         };
         javascript.javascriptGenerator.forBlock['move_4_motors'] = function(block) {
-            var m1 = block.getFieldValue('M1'); var m2 = block.getFieldValue('M2');
-            var m3 = block.getFieldValue('M3'); var m4 = block.getFieldValue('M4');
+            var m1 = javascript.javascriptGenerator.valueToCode(block, 'M1', javascript.Order.ATOMIC) || '0';
+            var m2 = javascript.javascriptGenerator.valueToCode(block, 'M2', javascript.Order.ATOMIC) || '0';
+            var m3 = javascript.javascriptGenerator.valueToCode(block, 'M3', javascript.Order.ATOMIC) || '0';
+            var m4 = javascript.javascriptGenerator.valueToCode(block, 'M4', javascript.Order.ATOMIC) || '0';
             return `await sendDrivePacket(${m1}, ${m2}, ${m3}, ${m4});\n`;
         };
 
@@ -1195,8 +1242,8 @@
                 this.appendDummyInput()
                     .appendField("⚙️ Мотор")
                     .appendField(new Blockly.FieldDropdown([["A","1"], ["B","2"], ["C","3"], ["D","4"]]), "MOTOR")
-                    .appendField("Шв:")
-                    .appendField(new Blockly.FieldTextInput("100"), "SPEED");
+                    .appendField("Шв:");
+                this.appendValueInput("SPEED").setCheck("Number");
                 this.setPreviousStatement(true); 
                 this.setNextStatement(true); 
                 this.setColour(260); 
@@ -1204,7 +1251,7 @@
         };
         javascript.javascriptGenerator.forBlock['motor_single'] = function(block) {
             var m = block.getFieldValue('MOTOR'); 
-            var s = block.getFieldValue('SPEED');
+            var s = javascript.javascriptGenerator.valueToCode(block, 'SPEED', javascript.Order.ATOMIC) || '0';
             return `
             var current = window.motorState || {m1:0, m2:0, m3:0, m4:0};
             var m1 = current.m1, m2 = current.m2, m3 = current.m3, m4 = current.m4;
@@ -1219,13 +1266,26 @@
         Blockly.Blocks['robot_stop'] = { init: function() { this.appendDummyInput().appendField("🛑 Стоп"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(0); } };
         javascript.javascriptGenerator.forBlock['robot_stop'] = function() { return `recordMove(0,0,0,0); await sendDrivePacket(0,0,0,0);\n`; };
 
-        Blockly.Blocks['wait_seconds'] = { init: function() { this.appendDummyInput().appendField("⏳ Чекати").appendField(new Blockly.FieldTextInput("1"), "S"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(40); } };
-        javascript.javascriptGenerator.forBlock['wait_seconds'] = function(b) { return `recordWait(${b.getFieldValue('S')}); await new Promise(r => setTimeout(r, ${b.getFieldValue('S')*1000}));\n`; };
+        Blockly.Blocks['wait_seconds'] = { 
+            init: function() { 
+                this.appendDummyInput().appendField("⏳ Чекати");
+                this.appendValueInput("SECONDS").setCheck("Number");
+                this.appendDummyInput().appendField("сек");
+                this.setPreviousStatement(true); 
+                this.setNextStatement(true); 
+                this.setColour(40); 
+            } 
+        };
+        javascript.javascriptGenerator.forBlock['wait_seconds'] = function(b) { 
+            var s = javascript.javascriptGenerator.valueToCode(b, 'SECONDS', javascript.Order.ATOMIC) || '0';
+            return `recordWait(${s}); await new Promise(r => setTimeout(r, ${s} * 1000));\n`; 
+        };
 
         Blockly.Blocks['sensor_get'] = { 
             init: function() { 
                 this.appendDummyInput()
-                    .appendField("📏 Відстань (Порт)")
+                    .appendField(new Blockly.FieldImage("https://img.icons8.com/ios-glyphs/30/ffffff/sensor.png", 20, 20, "*"))
+                    .appendField("Сенсор")
                     .appendField(new Blockly.FieldDropdown([["Порт 1","0"], ["Порт 2","1"], ["Порт 3","2"], ["Порт 4","3"]]), "SENS");
                 this.setOutput(true, "Number"); 
                 this.setColour(180); 
@@ -1238,6 +1298,20 @@
 
         Blockly.Blocks['go_home'] = { init: function() { this.appendDummyInput().appendField("🏠 Додому (Назад)"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(290); } };
         javascript.javascriptGenerator.forBlock['go_home'] = function() { return 'await goHomeSequence();\n'; };
+
+        Blockly.Blocks['console_log'] = {
+            init: function() {
+                this.appendDummyInput().appendField("📝 Лог");
+                this.appendValueInput("MSG");
+                this.setPreviousStatement(true);
+                this.setNextStatement(true);
+                this.setColour(60);
+            }
+        };
+        javascript.javascriptGenerator.forBlock['console_log'] = function(b) {
+            var msg = javascript.javascriptGenerator.valueToCode(b, 'MSG', javascript.Order.ATOMIC) || "''";
+            return `log('LOG: ' + ${msg}, 'info');\n`;
+        };
 
         // Execution
         let moveHistory = [];
@@ -1260,7 +1334,11 @@
             isCodeRunning = true; moveHistory = [];
             globalRunBtn.classList.add('running'); runIcon.classList.remove('fa-play'); runIcon.classList.add('fa-stop'); runIcon.classList.add('ml-0');
             const code = javascript.javascriptGenerator.workspaceToCode(workspace);
-            try { const runner = new Function(`return (async () => { ${code} })();`); await runner(); } catch(e) { console.error(e); } 
+            
+            // Log code for debugging
+            console.log("Generated Code:", code);
+            
+            try { const runner = new Function(`return (async () => { ${code} })();`); await runner(); } catch(e) { console.error(e); log("Error: " + e.message, 'err'); } 
             finally { if(isCodeRunning) stopCode(); }
         };
         window.stopCode = function() { 
@@ -1274,8 +1352,51 @@
             document.getElementById('codeModal').classList.remove('hidden');
         }
 
+        // Custom Prompts for Variables (Mobile Friendly)
+        Blockly.dialog.setPrompt(function(message, defaultValue, callback) {
+            // Create a custom modal for input
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 backdrop-blur-sm';
+            
+            const modal = document.createElement('div');
+            modal.className = 'bg-slate-900 w-full max-w-sm rounded-2xl border border-slate-700 p-6 shadow-2xl';
+            
+            const title = document.createElement('h3');
+            title.className = 'text-lg font-bold text-white mb-4 text-center';
+            title.innerText = message;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none mb-4';
+            input.value = defaultValue;
+            
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'grid grid-cols-2 gap-3';
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'py-2 rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 font-bold';
+            cancelBtn.innerText = 'Скасувати';
+            cancelBtn.onclick = () => { document.body.removeChild(overlay); callback(null); };
+            
+            const okBtn = document.createElement('button');
+            okBtn.className = 'py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-500 font-bold';
+            okBtn.innerText = 'OK';
+            okBtn.onclick = () => { document.body.removeChild(overlay); callback(input.value); };
+            
+            btnContainer.appendChild(cancelBtn);
+            btnContainer.appendChild(okBtn);
+            modal.appendChild(title);
+            modal.appendChild(input);
+            modal.appendChild(btnContainer);
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            
+            input.focus();
+        });
+
         // Expose functions for generated code
         window.sendDrivePacket = sendDrivePacket;
+        window.log = log;
     </script>
 </body>
 </html>
