@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RoboControl Car (SLIP)</title>
+    <title>RoboControl Car (Pro SLIP)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CORE BLOCKLY -->
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <!-- GENERATORS -->
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
 
     <style>
         /* --- GLOBAL STYLES --- */
@@ -76,13 +80,13 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
 
-        /* --- DUAL JOYSTICK --- */
-        .joy-dual-container { width: 140px; height: 140px; margin: 0 auto; position: relative; }
-        .joy-dual-base { width: 100%; height: 100%; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 80%); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); position: relative; touch-action: none; }
-        .joy-dual-stick { position: absolute; width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #a855f7, #7e22ce); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; pointer-events: none; }
-        .joy-dual-stick.snap { transition: transform 0.2s; }
-        .trig-btn { width: 60px; height: 60px; border-radius: 50%; background: #1e293b; border: 2px solid #334155; color: #64748b; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.1s; box-shadow: 0 4px 0 #0f172a; }
-        .trig-btn:active { transform: translateY(4px); box-shadow: none; background: #7e22ce; border-color: #a855f7; color: white; }
+        /* --- QUAD JOYSTICK --- */
+        .joy-quad-wrapper { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .joy-quad-label { font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; text-align: center; }
+        .joy-quad-container { width: 100px; height: 100px; position: relative; }
+        .joy-quad-base { width: 100%; height: 100%; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 80%); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); position: relative; touch-action: none; }
+        .joy-quad-stick { position: absolute; width: 40px; height: 40px; background: radial-gradient(circle at 30% 30%, #a855f7, #7e22ce); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; pointer-events: none; }
+        .joy-quad-stick.snap { transition: transform 0.2s; }
 
         /* --- BLOCKLY --- */
         #blocklyDiv { position: absolute; top: 64px; left: 0; right: 0; bottom: 64px; background-color: #0f172a !important; }
@@ -115,6 +119,17 @@
         .toggle-checkbox::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: 0.3s; }
         .toggle-checkbox:checked { background: #3b82f6; }
         .toggle-checkbox:checked::after { transform: translateX(20px); }
+        
+        /* Custom Button Checkbox */
+        .btn-check-label {
+            flex: 1; text-align: center; padding: 10px; background: #334155; 
+            border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;
+            font-weight: bold; color: #94a3b8;
+        }
+        .btn-check-input:checked + .btn-check-label {
+            background: #2563eb; color: white; border-color: #60a5fa;
+        }
+        .btn-check-input { display: none; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col">
@@ -133,14 +148,20 @@
             <button onclick="switchView('view-builder', this)" class="nav-btn" title="Блоки">
                 <i class="fa-solid fa-puzzle-piece text-lg"></i>
             </button>
-            <button onclick="startDualMode(this)" class="nav-btn text-purple-400 hover:text-purple-300" title="Dual Mode">
-                <i class="fa-solid fa-gamepad text-lg"></i><i class="fa-solid fa-gamepad text-lg -ml-2 text-purple-600"></i>
+            <!-- 4 JOYSTICK ICON -->
+            <button onclick="startDualMode(this)" class="nav-btn text-purple-400 hover:text-purple-300" title="4 Джойстики">
+                <div class="grid grid-cols-2 gap-0.5" style="width: 18px; height: 18px;">
+                    <div class="bg-current rounded-full opacity-70"></div>
+                    <div class="bg-current rounded-full opacity-70"></div>
+                    <div class="bg-current rounded-full opacity-70"></div>
+                    <div class="bg-current rounded-full opacity-70"></div>
+                </div>
             </button>
             <div class="w-px h-6 bg-slate-700 mx-1"></div>
             <button onclick="openPassModal()" class="nav-btn text-emerald-500/80 hover:text-emerald-400" title="Пароль">
                 <i class="fa-solid fa-lock text-lg"></i>
             </button>
-            <button onclick="toggleLogModal()" class="nav-btn text-yellow-500/80 hover:text-yellow-400" title="Лог">
+            <button id="btnLog" onclick="toggleLogModal()" class="nav-btn text-yellow-500/80 hover:text-yellow-400 relative" title="Лог (Затисни 3с)">
                 <i class="fa-solid fa-book text-lg"></i>
             </button>
         </nav>
@@ -153,7 +174,7 @@
     <!-- === MAIN CONTENT === -->
     <main class="flex-1 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950 pt-16">
         
-        <!-- --- VIEW 1: JOYSTICK --- -->
+        <!-- --- VIEW 1: JOYSTICK (MAIN) --- -->
         <section id="view-joystick" class="absolute inset-0 flex flex-col items-center justify-center p-4 transition-opacity duration-300">
             
             <!-- Joystick -->
@@ -203,7 +224,7 @@
 
                 <!-- HEX Display -->
                 <div class="bg-black/40 px-3 py-1 rounded text-[10px] font-mono tracking-widest text-slate-400 border border-slate-800/50 text-center mt-2">
-                    HEX: <span id="joyHex" class="text-yellow-500 font-bold">00 00 0A</span>
+                    HEX: <span id="joyHex" class="text-yellow-500 font-bold">00 00 00 00</span>
                 </div>
             </div>
         </section>
@@ -226,47 +247,62 @@
             </button>
         </section>
 
-        <!-- --- VIEW 3: DUAL MODE --- -->
-        <section id="view-dual" class="absolute inset-0 hidden opacity-0 flex flex-col items-center justify-center">
+        <!-- --- VIEW 3: QUAD MODE --- -->
+        <section id="view-dual" class="absolute inset-0 hidden opacity-0 flex flex-col items-center justify-center bg-slate-950">
              <div class="absolute top-0 w-full h-12 bg-slate-900/50 flex justify-between items-center px-6 border-b border-white/5 backdrop-blur-sm z-10">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
-                    <span class="text-xs text-purple-400 font-bold tracking-[0.2em] uppercase">Dual Stick Mode</span>
+                    <span class="text-xs text-purple-400 font-bold tracking-[0.2em] uppercase">4 Motor Control</span>
                 </div>
-                <button onclick="openProtocolModal()" class="text-xs text-slate-400 hover:text-white flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-full border border-slate-700 hover:border-slate-500 transition-all">
-                    <i class="fa-solid fa-gear"></i> Налаштувати
-                </button>
             </div>
 
-            <div class="w-full flex justify-around items-center px-4 relative mt-10">
-                <!-- Left -->
-                <div class="flex flex-col items-center gap-6">
-                    <div class="relative group">
-                        <button id="btnL" class="trig-btn" onmousedown="setBtn('L', 1)" onmouseup="setBtn('L', 0)" ontouchstart="setBtn('L', 1)" ontouchend="setBtn('L', 0)">L</button>
-                         <div class="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] bg-slate-900 px-2 py-1 rounded border border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onclick="configBtn('L')">VAL: <span id="valDispL">1</span></div>
+            <!-- 4 JOYSTICK GRID -->
+            <div class="w-full h-full flex items-center justify-center gap-8 px-4 pt-10">
+                
+                <!-- LEFT GROUP (M1, M3) -->
+                <div class="joy-quad-wrapper">
+                    <div>
+                        <div class="joy-quad-label">M1 (Перед)</div>
+                        <div id="joy1-container" class="joy-quad-container">
+                            <div id="joy1-base" class="joy-quad-base">
+                                <div id="joy1-stick" class="joy-quad-stick snap"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="joyL-container" class="joy-dual-container">
-                        <div id="joyL-base" class="joy-dual-base">
-                            <div id="joyL-stick" class="joy-dual-stick snap"></div>
+                    <div>
+                        <div class="joy-quad-label">M3 (Зад)</div>
+                        <div id="joy3-container" class="joy-quad-container">
+                            <div id="joy3-base" class="joy-quad-base">
+                                <div id="joy3-stick" class="joy-quad-stick snap"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right -->
-                <div class="flex flex-col items-center gap-6">
-                    <div class="relative group">
-                        <button id="btnR" class="trig-btn" onmousedown="setBtn('R', 1)" onmouseup="setBtn('R', 0)" ontouchstart="setBtn('R', 1)" ontouchend="setBtn('R', 0)">R</button>
-                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] bg-slate-900 px-2 py-1 rounded border border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onclick="configBtn('R')">VAL: <span id="valDispR">1</span></div>
+                <!-- RIGHT GROUP (M2, M4) -->
+                <div class="joy-quad-wrapper">
+                    <div>
+                        <div class="joy-quad-label">M2 (Перед)</div>
+                        <div id="joy2-container" class="joy-quad-container">
+                            <div id="joy2-base" class="joy-quad-base">
+                                <div id="joy2-stick" class="joy-quad-stick snap"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="joyR-container" class="joy-dual-container">
-                        <div id="joyR-base" class="joy-dual-base">
-                            <div id="joyR-stick" class="joy-dual-stick snap"></div>
+                    <div>
+                        <div class="joy-quad-label">M4 (Зад)</div>
+                        <div id="joy4-container" class="joy-quad-container">
+                            <div id="joy4-base" class="joy-quad-base">
+                                <div id="joy4-stick" class="joy-quad-stick snap"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
-            <div class="mt-8 bg-black/40 px-4 py-2 rounded text-xs font-mono text-purple-400 border border-slate-800">
-                HEX: <span id="dualPacketHex">--</span>
+            
+            <div class="bg-black/40 px-4 py-2 rounded text-xs font-mono text-purple-400 border border-slate-800 mb-4">
+                HEX: <span id="quadPacketHex">--</span>
             </div>
         </section>
     </main>
@@ -276,32 +312,58 @@
     
     <!-- Tuning Modal -->
     <div id="tuningModal" class="fixed inset-0 bg-black/90 z-[80] hidden flex items-center justify-center backdrop-blur-md p-4">
-        <div class="bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-700 p-5">
+        <div class="bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-700 p-5 overflow-y-auto max-h-[90vh]">
             <h3 class="text-lg font-bold text-white mb-4 text-center">⚙️ Налаштування шасі</h3>
             
             <div class="space-y-4">
+                <!-- Protocol Switch -->
+                 <div class="bg-purple-900/20 p-3 rounded-xl border border-purple-500/30">
+                    <label class="tune-check bg-transparent border-0 p-0">
+                        <span class="text-sm text-purple-300 font-bold"><i class="fa-solid fa-shield-halved mr-2"></i>SLIP Протокол</span>
+                        <input type="checkbox" id="slipCheck" class="toggle-checkbox" onchange="saveTuning()">
+                    </label>
+                </div>
+
+                <!-- 4WD Switch -->
+                <div class="bg-blue-900/20 p-3 rounded-xl border border-blue-500/30">
+                    <label class="tune-check bg-transparent border-0 p-0">
+                        <span class="text-sm text-blue-300 font-bold"><i class="fa-solid fa-truck-monster mr-2"></i>Режим 4 моторів (4WD)</span>
+                        <input type="checkbox" id="fourWdCheck" class="toggle-checkbox" onchange="saveTuning()">
+                    </label>
+                </div>
+
+                <!-- Invert (New Layout) -->
+                <div class="space-y-2">
+                    <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Інверсія моторів</span>
+                    <div class="flex gap-2">
+                        <input type="checkbox" id="invLCheck" class="btn-check-input" onchange="saveTuning()">
+                        <label for="invLCheck" class="btn-check-label">L (Лівий)</label>
+                        
+                        <input type="checkbox" id="invRCheck" class="btn-check-input" onchange="saveTuning()">
+                        <label for="invRCheck" class="btn-check-label">R (Правий)</label>
+                    </div>
+                </div>
+
                 <!-- Trim -->
                 <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700">
                     <div class="flex justify-between text-xs text-slate-400 mb-2">
-                        <span>L (Вліво)</span>
-                        <span class="font-bold text-white">БАЛАНС</span>
-                        <span>R (Вправо)</span>
+                        <span>Ліво</span>
+                        <span class="font-bold text-white">ВІДХИЛЕННЯ (БАЛАНС)</span>
+                        <span>Право</span>
                     </div>
                     <input type="range" id="trimSlider" min="-50" max="50" value="0" step="1" oninput="updateTrimDisplay(this.value)">
                     <div class="text-center text-xs text-blue-400 font-mono mt-1" id="trimValueDisplay">0</div>
-                    <p class="text-[10px] text-slate-500 mt-1 text-center">Змістіть, якщо машинку заносить в бік</p>
                 </div>
-
-                <!-- Invert -->
-                <div class="space-y-2">
-                    <label class="tune-check">
-                        <span class="text-sm text-slate-300">Реверс Лівого (L)</span>
-                        <input type="checkbox" id="invLCheck" class="toggle-checkbox" onchange="saveTuning()">
-                    </label>
-                    <label class="tune-check">
-                        <span class="text-sm text-slate-300">Реверс Правого (R)</span>
-                        <input type="checkbox" id="invRCheck" class="toggle-checkbox" onchange="saveTuning()">
-                    </label>
+                
+                <!-- Turn Sensitivity -->
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                    <div class="flex justify-between text-xs text-slate-400 mb-2">
+                        <span>Плавний</span>
+                        <span class="font-bold text-white">ЧУТЛИВІСТЬ ПОВОРОТУ</span>
+                        <span>Різкий</span>
+                    </div>
+                    <input type="range" id="turnSensSlider" min="10" max="100" value="100" step="10" oninput="updateTrimDisplay(null)">
+                    <div class="text-center text-xs text-blue-400 font-mono mt-1" id="turnSensDisplay">100%</div>
                 </div>
             </div>
 
@@ -320,29 +382,6 @@
         </div>
     </div>
 
-    <div id="valueConfigModal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 p-5 rounded-xl border border-slate-700 z-50 shadow-2xl w-64">
-        <h3 class="text-white text-sm font-bold mb-2">Значення (0-255)</h3>
-        <input type="number" id="btnValInput" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white mb-3 text-center">
-        <div class="flex gap-2">
-            <button onclick="saveBtnConfig()" class="flex-1 bg-purple-600 text-white text-xs py-2 rounded">OK</button>
-            <button onclick="document.getElementById('valueConfigModal').classList.add('hidden')" class="flex-1 bg-slate-700 text-white text-xs py-2 rounded">X</button>
-        </div>
-    </div>
-
-    <div id="protocolModal" class="fixed inset-0 bg-black/90 z-[70] hidden flex items-center justify-center backdrop-blur-md p-4">
-        <div class="bg-slate-900 w-full max-w-sm h-[80vh] rounded-2xl shadow-2xl border border-slate-700 flex flex-col">
-            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
-                <h3 class="font-bold text-white">Протокол Dual Mode</h3>
-                <button onclick="document.getElementById('protocolModal').classList.add('hidden')" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="byteList" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
-            <div class="p-4 border-t border-slate-800 flex gap-2">
-                <button onclick="addByte()" class="flex-1 bg-slate-800 text-blue-400 py-2 rounded-lg border border-dashed border-slate-600">Додати</button>
-                <button onclick="saveProtocol()" class="flex-1 bg-blue-600 text-white font-bold py-2 rounded-lg">ОК</button>
-            </div>
-        </div>
-    </div>
-
     <div id="logModal" class="fixed inset-0 bg-black/50 z-40 hidden flex items-end sm:items-center justify-center backdrop-blur-sm sm:p-4">
         <div class="bg-slate-900 w-full sm:max-w-md h-2/3 sm:h-[500px] sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-700 flex flex-col">
             <div class="flex justify-between items-center p-4 border-b border-slate-800">
@@ -353,7 +392,7 @@
                 </div>
             </div>
             <div id="logContainer" class="flex-1 overflow-y-auto p-4 space-y-1 bg-black/20 font-mono text-xs">
-                <div class="text-slate-500 italic">-- Журнал подій --</div>
+                <div class="text-slate-500 italic">-- Журнал подій (затисніть 3с для відкриття) --</div>
             </div>
         </div>
     </div>
@@ -361,6 +400,73 @@
     <!-- XML Blocks -->
     <xml id="toolbox" style="display: none">
         <category name="🌟 Готові збірки" colour="#fbbf24">
+            <!-- Збірка: Автопілот з датчиком -->
+            <block type="start_hat">
+                <next>
+                    <block type="controls_whileUntil">
+                        <field name="MODE">WHILE</field>
+                        <value name="BOOL"><block type="logic_boolean"><field name="BOOL">TRUE</field></block></value>
+                        <statement name="DO">
+                            <block type="controls_if">
+                                <mutation else="1"></mutation>
+                                <value name="IF0">
+                                    <block type="logic_compare">
+                                        <field name="OP">LT</field>
+                                        <value name="A"><block type="sensor_get"><field name="SENS">0</field></block></value>
+                                        <value name="B"><block type="math_number"><field name="NUM">20</field></block></value>
+                                    </block>
+                                </value>
+                                <statement name="DO0">
+                                    <block type="robot_stop">
+                                        <next>
+                                            <block type="robot_move">
+                                                <value name="L"><shadow type="math_number"><field name="NUM">-80</field></shadow></value>
+                                                <value name="R"><shadow type="math_number"><field name="NUM">-80</field></shadow></value>
+                                                <next>
+                                                    <block type="wait_seconds">
+                                                        <field name="SECONDS">0.5</field>
+                                                        <next>
+                                                            <block type="robot_move">
+                                                                <value name="L"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+                                                                <value name="R"><shadow type="math_number"><field name="NUM">-100</field></shadow></value>
+                                                                <next>
+                                                                    <block type="wait_seconds"><field name="SECONDS">0.5</field></block>
+                                                                </next>
+                                                            </block>
+                                                        </next>
+                                                    </block>
+                                                </next>
+                                            </block>
+                                        </next>
+                                    </block>
+                                </statement>
+                                <statement name="ELSE">
+                                    <block type="robot_move">
+                                        <value name="L"><shadow type="math_number"><field name="NUM">80</field></shadow></value>
+                                        <value name="R"><shadow type="math_number"><field name="NUM">80</field></shadow></value>
+                                        <next>
+                                            <block type="wait_seconds"><field name="SECONDS">0.1</field></block>
+                                        </next>
+                                    </block>
+                                </statement>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+
+            <!-- Збірка: 🏡 Повернутись Додому -->
+            <block type="start_hat">
+                <next>
+                    <block type="wait_seconds">
+                        <field name="SECONDS">2</field>
+                        <next>
+                            <block type="go_home"></block>
+                        </next>
+                    </block>
+                </next>
+            </block>
+
             <!-- Збірка: Їзда квадратом (Square) -->
             <block type="start_hat">
                 <next>
@@ -392,103 +498,6 @@
                     </block>
                 </next>
             </block>
-
-            <!-- Збірка: Змійка (Snake) -->
-            <block type="start_hat">
-                <next>
-                    <block type="controls_repeat_ext">
-                        <value name="TIMES"><shadow type="math_number"><field name="NUM">3</field></shadow></value>
-                        <statement name="DO">
-                            <block type="robot_move">
-                                <value name="L"><shadow type="math_number"><field name="NUM">50</field></shadow></value>
-                                <value name="R"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                                <next>
-                                    <block type="wait_seconds">
-                                        <field name="SECONDS">1</field>
-                                        <next>
-                                            <block type="robot_move">
-                                                <value name="L"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                                                <value name="R"><shadow type="math_number"><field name="NUM">50</field></shadow></value>
-                                                <next>
-                                                    <block type="wait_seconds">
-                                                        <field name="SECONDS">1</field>
-                                                    </block>
-                                                </next>
-                                            </block>
-                                        </next>
-                                    </block>
-                                </next>
-                            </block>
-                        </statement>
-                        <next><block type="robot_stop"></block></next>
-                    </block>
-                </next>
-            </block>
-
-            <!-- Збірка: Розвідка (Scout) -->
-            <block type="start_hat">
-                <next>
-                    <block type="robot_move">
-                        <value name="L"><shadow type="math_number"><field name="NUM">80</field></shadow></value>
-                        <value name="R"><shadow type="math_number"><field name="NUM">80</field></shadow></value>
-                        <next>
-                            <block type="wait_seconds">
-                                <field name="SECONDS">2</field>
-                                <next>
-                                    <block type="robot_stop">
-                                        <next>
-                                            <block type="wait_seconds">
-                                                <field name="SECONDS">1</field>
-                                                <next>
-                                                    <block type="go_home"></block>
-                                                </next>
-                                            </block>
-                                        </next>
-                                    </block>
-                                </next>
-                            </block>
-                        </next>
-                    </block>
-                </next>
-            </block>
-
-            <!-- Збірка: 📦 Доставка вантажу (Delivery) -->
-            <block type="start_hat">
-                <next>
-                    <block type="robot_move">
-                        <value name="L"><shadow type="math_number"><field name="NUM">60</field></shadow></value>
-                        <value name="R"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                        <next>
-                            <block type="wait_seconds">
-                                <field name="SECONDS">1.5</field>
-                                <next>
-                                    <block type="robot_move">
-                                        <value name="L"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                                        <value name="R"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                                        <next>
-                                            <block type="wait_seconds">
-                                                <field name="SECONDS">2</field>
-                                                <next>
-                                                    <block type="robot_stop">
-                                                        <next>
-                                                            <block type="wait_seconds">
-                                                                <field name="SECONDS">3</field>
-                                                                <next>
-                                                                    <block type="go_home"></block>
-                                                                </next>
-                                                            </block>
-                                                        </next>
-                                                    </block>
-                                                </next>
-                                            </block>
-                                        </next>
-                                    </block>
-                                </next>
-                            </block>
-                        </next>
-                    </block>
-                </next>
-            </block>
         </category>
         <category name="Машинка" colour="#4C97FF">
             <block type="start_hat"></block>
@@ -496,13 +505,23 @@
                 <value name="L"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
                 <value name="R"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
             </block>
-            <block type="move_3_motors"></block>
+            <block type="move_4_motors">
+                <value name="M1"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+                <value name="M2"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+                <value name="M3"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+                <value name="M4"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+            </block>
+            <block type="motor_single">
+                <value name="SPEED"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+            </block>
             <block type="robot_stop"></block>
         </category>
-        <category name="Логіка" colour="%{BKY_LOGIC_HUE}">
+        <category name="🧠 Логіка" colour="%{BKY_LOGIC_HUE}">
             <block type="controls_if"></block>
             <block type="logic_compare"></block>
             <block type="logic_operation"></block>
+            <block type="logic_boolean"></block>
+            <block type="sensor_get"></block>
         </category>
         <category name="Цикли" colour="%{BKY_LOOPS_HUE}">
             <block type="controls_repeat_ext"><value name="TIMES"><shadow type="math_number"><field name="NUM">4</field></shadow></value></block>
@@ -511,7 +530,6 @@
         <category name="Математика" colour="%{BKY_MATH_HUE}">
             <block type="math_number"></block>
             <block type="math_random_int"></block>
-            <block type="sensor_get"></block>
         </category>
         <category name="Час" colour="#FFBF00">
             <block type="wait_seconds"><field name="SECONDS">1</field></block>
@@ -548,10 +566,10 @@
         let lastJoyY = 0;
         
         // TUNING STATE
-        let tuning = { trim: 0, invertL: false, invertR: false };
+        let tuning = { trim: 0, invertL: false, invertR: false, useSlip: true, use4Motors: false, turnSens: 100 };
         try {
-            const saved = localStorage.getItem('roboTuning');
-            if(saved) tuning = JSON.parse(saved);
+            const saved = localStorage.getItem('roboTuning_v8');
+            if(saved) tuning = { ...tuning, ...JSON.parse(saved) };
         } catch(e) {}
         
         // Init UI
@@ -559,6 +577,10 @@
         document.getElementById('trimValueDisplay').innerText = tuning.trim > 0 ? `R+${tuning.trim}` : (tuning.trim < 0 ? `L${tuning.trim}` : '0');
         document.getElementById('invLCheck').checked = tuning.invertL;
         document.getElementById('invRCheck').checked = tuning.invertR;
+        document.getElementById('slipCheck').checked = tuning.useSlip;
+        document.getElementById('fourWdCheck').checked = tuning.use4Motors;
+        document.getElementById('turnSensSlider').value = tuning.turnSens;
+        document.getElementById('turnSensDisplay').innerText = tuning.turnSens + "%";
 
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
@@ -568,10 +590,30 @@
         const joyHex = document.getElementById('joyHex');
         const speedSlider = document.getElementById('speedSlider');
         const speedVal = document.getElementById('speedVal');
+        const btnLog = document.getElementById('btnLog');
+
+        // LONG PRESS FOR LOG
+        let logPressTimer;
+        btnLog.addEventListener('mousedown', () => {
+            logPressTimer = setTimeout(() => {
+                document.getElementById('logModal').classList.remove('hidden');
+            }, 3000); // 3 seconds
+        });
+        btnLog.addEventListener('mouseup', () => clearTimeout(logPressTimer));
+        btnLog.addEventListener('touchstart', (e) => {
+            logPressTimer = setTimeout(() => {
+                document.getElementById('logModal').classList.remove('hidden');
+            }, 3000);
+        });
+        btnLog.addEventListener('touchend', () => clearTimeout(logPressTimer));
+
 
         function updateTrimDisplay(val) {
-            tuning.trim = parseInt(val);
+            if(val !== null) tuning.trim = parseInt(val);
+            tuning.turnSens = parseInt(document.getElementById('turnSensSlider').value);
+            
             document.getElementById('trimValueDisplay').innerText = tuning.trim > 0 ? `R+${tuning.trim}` : (tuning.trim < 0 ? `L${tuning.trim}` : '0');
+            document.getElementById('turnSensDisplay').innerText = tuning.turnSens + "%";
             saveTuning();
         }
 
@@ -579,72 +621,128 @@
             tuning.trim = parseInt(document.getElementById('trimSlider').value);
             tuning.invertL = document.getElementById('invLCheck').checked;
             tuning.invertR = document.getElementById('invRCheck').checked;
-            localStorage.setItem('roboTuning', JSON.stringify(tuning));
+            tuning.useSlip = document.getElementById('slipCheck').checked;
+            tuning.use4Motors = document.getElementById('fourWdCheck').checked;
+            tuning.turnSens = parseInt(document.getElementById('turnSensSlider').value);
+            localStorage.setItem('roboTuning_v8', JSON.stringify(tuning));
         }
 
         // === HEARTBEAT ===
         setInterval(() => {
             if (isConnected && activeView === 'view-joystick') {
-                sendDrivePacket(currentL, currentR);
+                // Apply 4WD logic if enabled, otherwise 2WD
+                let m1 = currentL, m2 = currentR;
+                let m3 = tuning.use4Motors ? currentL : 0;
+                let m4 = tuning.use4Motors ? currentR : 0;
+                sendDrivePacket(m1, m2, m3, m4);
             }
         }, 100);
 
-        // === SLIP PROTOCOL (MANDATORY) ===
+        // === SLIP PROTOCOL (RFC 1055) ===
         const SLIP_END = 0xC0;
         const SLIP_ESC = 0xDB;
         const SLIP_ESC_END = 0xDC;
         const SLIP_ESC_ESC = 0xDD;
 
+        // RX BUFFER for SLIP
+        let rxBuffer = [];
+
         function slipEncode(dataArray) {
             let encoded = [];
+            encoded.push(SLIP_END); // Start frame (optional but good for robustness)
             for(let byte of dataArray) {
                 if(byte === SLIP_END) { encoded.push(SLIP_ESC, SLIP_ESC_END); }
                 else if(byte === SLIP_ESC) { encoded.push(SLIP_ESC, SLIP_ESC_ESC); }
                 else { encoded.push(byte); }
             }
-            encoded.push(SLIP_END);
+            encoded.push(SLIP_END); // End frame
             return new Uint8Array(encoded);
         }
 
+        function processSlipData(byte) {
+            if (byte === SLIP_END) {
+                if (rxBuffer.length > 0) {
+                    handlePacket(rxBuffer);
+                    rxBuffer = [];
+                }
+            } else if (byte === SLIP_ESC) {
+                rxBuffer.push(byte); 
+            } else {
+                if (rxBuffer.length > 0 && rxBuffer[rxBuffer.length - 1] === SLIP_ESC) {
+                    rxBuffer.pop(); // Remove ESC
+                    if (byte === SLIP_ESC_END) rxBuffer.push(SLIP_END);
+                    else if (byte === SLIP_ESC_ESC) rxBuffer.push(SLIP_ESC);
+                    else {
+                        rxBuffer.push(byte);
+                        log("SLIP Error: Bad Escape", "err");
+                    } 
+                } else {
+                    rxBuffer.push(byte);
+                }
+            }
+        }
+
+        function handlePacket(data) {
+            // Log every packet for debugging
+            let hexStr = data.map(b => b.toString(16).padStart(2,'0')).join(' ');
+            
+            // Expecting 4 bytes for 4 sensors
+            if (data.length >= 4) {
+                log(`RX SENS: [${data.join(', ')}]`, 'rx');
+                // Update global for blocks
+                window.sensorData = data;
+            } else {
+                 const str = new TextDecoder().decode(new Uint8Array(data)).trim();
+                 log(`RX RAW (${data.length}b): ${hexStr} / "${str}"`, 'rx');
+            }
+        }
+
         // === BLUETOOTH CORE ===
-        async function sendDrivePacket(l, r) {
+        // Global state for motors to allow individual updates
+        window.motorState = { m1:0, m2:0, m3:0, m4:0 };
+
+        async function sendDrivePacket(m1, m2, m3, m4) {
             if (!isConnected || !characteristic) return;
 
-            // Packet logic is now pre-calculated in updateTankLogic for display sync
-            // but we send the *current global* values which are already processed.
-            // However, sendDrivePacket was doing the processing before.
-            // Let's make sendDrivePacket just send the raw values it gets, 
-            // OR use the global currentL/currentR.
-            // To be safe and consistent with heartbeat, we use args l, r.
+            // Update global state
+            window.motorState = { m1, m2, m3, m4 };
+
+            m1 = Math.max(-100, Math.min(100, parseInt(m1)));
+            m2 = Math.max(-100, Math.min(100, parseInt(m2)));
+            m3 = Math.max(-100, Math.min(100, parseInt(m3)));
+            m4 = Math.max(-100, Math.min(100, parseInt(m4)));
             
-            // Cast to Int8 for correct binary representation of negative numbers
-            const raw = new Int8Array([l, r, 10]);
-            const uintView = new Uint8Array(raw.buffer); 
+            // CLEAN 4 BYTES PACKET (No 0x0A)
+            const raw = new Int8Array([m1, m2, m3, m4]); 
+
+            let finalPacket;
+            if (tuning.useSlip) {
+                const uintView = new Uint8Array(raw.buffer);
+                finalPacket = slipEncode(uintView);
+            } else {
+                finalPacket = raw;
+            }
             
-            const slipPacket = slipEncode(uintView);
-            
-            try { await characteristic.writeValue(slipPacket); } catch(e) { log(e, 'err'); }
+            try { await characteristic.writeValue(finalPacket); } catch(e) { log(e, 'err'); }
         }
 
         async function sendRawPacket(data) {
              if (!isConnected || !characteristic) return;
-             // If raw packet, assume user handles structure, but we wrap in SLIP for transport
-             try { await characteristic.writeValue(slipEncode(data)); } catch(e) {}
+             let finalPacket = data;
+             if (tuning.useSlip) {
+                 finalPacket = slipEncode(new Uint8Array(data.buffer));
+             }
+             try { await characteristic.writeValue(finalPacket); } catch(e) {}
         }
 
         async function sendTextData(str) {
             if (!isConnected || !characteristic) return;
             const raw = new TextEncoder().encode(str + '\n');
-            const slipPacket = slipEncode(raw);
-            try { await characteristic.writeValue(slipPacket); log(`Cmd: ${str}`, 'tx'); } catch(e) { log(e, 'err'); }
-        }
-
-        async function bt_move3(m1, m2, m3) {
-            if(typeof isConnected !== 'undefined' && isConnected) {
-                // Custom 3 motor packet wrapped in SLIP
-                const raw = new Int8Array([parseInt(m1), parseInt(m2), parseInt(m3), 10]);
-                try { await characteristic.writeValue(slipEncode(new Uint8Array(raw.buffer))); } catch(e){}
-            }
+             let finalPacket = raw;
+             if (tuning.useSlip) {
+                 finalPacket = slipEncode(raw);
+             }
+            try { await characteristic.writeValue(finalPacket); log(`Cmd: ${str}`, 'tx'); } catch(e) { log(e, 'err'); }
         }
 
         // Logging
@@ -656,7 +754,11 @@
             else if(type === 'rx') el.classList.add('log-rx');
             else if(type === 'err') el.classList.add('log-err');
             else el.classList.add('text-slate-400');
-            el.innerText = msg;
+            
+            // Timestamp for debug
+            const time = new Date().toLocaleTimeString().split(' ')[0];
+            el.innerHTML = `<span class="opacity-50 text-[9px] mr-2">${time}</span>${msg}`;
+            
             container.appendChild(el);
             container.scrollTop = container.scrollHeight;
         }
@@ -685,11 +787,17 @@
                 try {
                     await characteristic.startNotifications();
                     characteristic.addEventListener('characteristicvaluechanged', (e) => {
-                        // Receive Data (Text based for compatibility)
-                        const str = new TextDecoder().decode(e.target.value).trim();
-                        log(str, 'rx');
-                        let val = parseFloat(str.replace('S:', ''));
-                        if(!isNaN(val)) { window.sensorVal = val; document.getElementById('sensorValDisplay').innerText = val; }
+                        const rawData = new Uint8Array(e.target.value.buffer);
+                        
+                        if (tuning.useSlip) {
+                            // Decode SLIP byte by byte
+                            for(let i=0; i<rawData.length; i++) {
+                                processSlipData(rawData[i]);
+                            }
+                        } else {
+                            // RAW Mode: Assume whole packet or text
+                             handlePacket(Array.from(rawData));
+                        }
                     });
                 } catch(e){}
 
@@ -830,23 +938,27 @@
         }
         
         function updateTankLogic(vx, vy) {
+            // Apply Turn Sensitivity
+            vx = Math.round(vx * (tuning.turnSens / 100));
+
             let vL = vy + vx; 
             let vR = vy - vx;
             
             // 1. Initial Logic
-            // Apply Trim/Invert
+            // Apply Trim/Invert (Logic from 19)
             if (tuning.trim > 0) vR = vR * (1 - (tuning.trim / 100));
             else if (tuning.trim < 0) vL = vL * (1 - (Math.abs(tuning.trim) / 100));
             if (tuning.invertL) vL = -vL;
             if (tuning.invertR) vR = -vR;
             
-            // 2. Apply Speed Multiplier
-            vL = Math.round(vL * speedMultiplier);
-            vR = Math.round(vR * speedMultiplier);
-
-            // 3. Clamping to -100..100 (Just in case, though multiplier should keep it in range)
+            // 2. FIX: Clamp logic moved BEFORE speed multiplier (Like in 18)
+            // This ensures speed slider works as a true ceiling for power.
             vL = Math.max(-100, Math.min(100, vL));
             vR = Math.max(-100, Math.min(100, vR));
+
+            // 3. Apply Speed Multiplier (Logic from 18)
+            vL = Math.round(vL * speedMultiplier);
+            vR = Math.round(vR * speedMultiplier);
             
             currentL = vL; currentR = vR;
             
@@ -854,11 +966,20 @@
             motorLDisplay.innerText = currentL; 
             motorRDisplay.innerText = currentR;
             
-            // Update HEX
-            const raw = new Int8Array([currentL, currentR, 10]);
-            const uintView = new Uint8Array(raw.buffer); 
+            // Update HEX (Clean 4 bytes)
             let hex = "";
-            for(let b of uintView) hex += b.toString(16).toUpperCase().padStart(2,'0') + " ";
+            if (tuning.use4Motors) {
+                // 4WD Packet
+                const raw = new Int8Array([currentL, currentR, currentL, currentR]);
+                const uintView = new Uint8Array(raw.buffer); 
+                for(let b of uintView) hex += b.toString(16).toUpperCase().padStart(2,'0') + " ";
+            } else {
+                // 2WD Packet
+                const raw = new Int8Array([currentL, currentR, 0, 0]);
+                const uintView = new Uint8Array(raw.buffer); 
+                for(let b of uintView) hex += b.toString(16).toUpperCase().padStart(2,'0') + " ";
+            }
+            
             joyHex.innerText = hex;
         }
 
@@ -988,23 +1109,73 @@
         Blockly.Blocks['robot_move'] = { init: function() { this.appendDummyInput().appendField("🚗 Їхати").appendField("L").appendField(new Blockly.FieldTextInput("100"), "L").appendField("R").appendField(new Blockly.FieldTextInput("100"), "R"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
         javascript.javascriptGenerator.forBlock['robot_move'] = function(b) {
             var l = b.getFieldValue('L'); var r = b.getFieldValue('R');
-            return `recordMove(${l}, ${r}); await sendDrivePacket(${l}, ${r});\n`;
+            return `recordMove(${l}, ${r}, ${l}, ${r}); await sendDrivePacket(${l}, ${r}, ${l}, ${r});\n`;
+        };
+        
+        Blockly.Blocks['move_4_motors'] = { 
+            init: function() { 
+                this.appendDummyInput()
+                    .appendField("🚙 4 Мотори")
+                    .appendField("1:").appendField(new Blockly.FieldTextInput("100"), "M1")
+                    .appendField("2:").appendField(new Blockly.FieldTextInput("100"), "M2")
+                    .appendField("3:").appendField(new Blockly.FieldTextInput("100"), "M3")
+                    .appendField("4:").appendField(new Blockly.FieldTextInput("100"), "M4");
+                this.setPreviousStatement(true); 
+                this.setNextStatement(true); 
+                this.setColour(260); 
+            } 
+        };
+        javascript.javascriptGenerator.forBlock['move_4_motors'] = function(block) {
+            var m1 = block.getFieldValue('M1'); var m2 = block.getFieldValue('M2');
+            var m3 = block.getFieldValue('M3'); var m4 = block.getFieldValue('M4');
+            return `await sendDrivePacket(${m1}, ${m2}, ${m3}, ${m4});\n`;
         };
 
-        Blockly.Blocks['move_3_motors'] = { init: function() { this.appendDummyInput().appendField("🚀 3 Мотори").appendField("M1").appendField(new Blockly.FieldTextInput("100"), "M1").appendField("M2").appendField(new Blockly.FieldTextInput("100"), "M2").appendField("M3").appendField(new Blockly.FieldTextInput("100"), "M3"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(260); } };
-        javascript.javascriptGenerator.forBlock['move_3_motors'] = function(block) {
-            var m1 = block.getFieldValue('M1'); var m2 = block.getFieldValue('M2'); var m3 = block.getFieldValue('M3');
-            return `await bt_move3(${m1}, ${m2}, ${m3});\n`;
+        Blockly.Blocks['motor_single'] = { 
+            init: function() { 
+                this.appendDummyInput()
+                    .appendField("⚙️ Мотор")
+                    .appendField(new Blockly.FieldDropdown([["1","1"], ["2","2"], ["3","3"], ["4","4"]]), "MOTOR")
+                    .appendField("Шв:")
+                    .appendField(new Blockly.FieldTextInput("100"), "SPEED");
+                this.setPreviousStatement(true); 
+                this.setNextStatement(true); 
+                this.setColour(260); 
+            } 
+        };
+        javascript.javascriptGenerator.forBlock['motor_single'] = function(block) {
+            var m = block.getFieldValue('MOTOR'); 
+            var s = block.getFieldValue('SPEED');
+            return `
+            var current = window.motorState || {m1:0, m2:0, m3:0, m4:0};
+            var m1 = current.m1, m2 = current.m2, m3 = current.m3, m4 = current.m4;
+            if('${m}' == '1') m1 = ${s};
+            if('${m}' == '2') m2 = ${s};
+            if('${m}' == '3') m3 = ${s};
+            if('${m}' == '4') m4 = ${s};
+            await sendDrivePacket(m1, m2, m3, m4);
+            \n`;
         };
 
         Blockly.Blocks['robot_stop'] = { init: function() { this.appendDummyInput().appendField("🛑 Стоп"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(0); } };
-        javascript.javascriptGenerator.forBlock['robot_stop'] = function() { return `recordMove(0,0); await sendDrivePacket(0,0);\n`; };
+        javascript.javascriptGenerator.forBlock['robot_stop'] = function() { return `recordMove(0,0,0,0); await sendDrivePacket(0,0,0,0);\n`; };
 
         Blockly.Blocks['wait_seconds'] = { init: function() { this.appendDummyInput().appendField("⏳ Чекати").appendField(new Blockly.FieldTextInput("1"), "S"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(40); } };
         javascript.javascriptGenerator.forBlock['wait_seconds'] = function(b) { return `recordWait(${b.getFieldValue('S')}); await new Promise(r => setTimeout(r, ${b.getFieldValue('S')*1000}));\n`; };
 
-        Blockly.Blocks['sensor_get'] = { init: function() { this.appendDummyInput().appendField("👁️ Датчик"); this.setOutput(true, "Number"); this.setColour(180); } };
-        javascript.javascriptGenerator.forBlock['sensor_get'] = function() { return ['window.sensorVal', javascript.Order.ATOMIC]; };
+        Blockly.Blocks['sensor_get'] = { 
+            init: function() { 
+                this.appendDummyInput()
+                    .appendField("📏 Відстань Сенсора")
+                    .appendField(new Blockly.FieldDropdown([["1","0"], ["2","1"], ["3","2"], ["4","3"]]), "SENS");
+                this.setOutput(true, "Number"); 
+                this.setColour(180); 
+            } 
+        };
+        javascript.javascriptGenerator.forBlock['sensor_get'] = function(b) { 
+            var idx = b.getFieldValue('SENS');
+            return [`(window.sensorData ? window.sensorData[${idx}] : 0)`, javascript.Order.ATOMIC]; 
+        };
 
         Blockly.Blocks['go_home'] = { init: function() { this.appendDummyInput().appendField("🏠 Додому (Назад)"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(290); } };
         javascript.javascriptGenerator.forBlock['go_home'] = function() { return 'await goHomeSequence();\n'; };
@@ -1012,16 +1183,16 @@
         // Execution
         let moveHistory = [];
         let isCodeRunning = false;
-        function recordMove(l, r) { if(isCodeRunning) moveHistory.push({ type: 'move', l: parseInt(l), r: parseInt(r) }); }
+        function recordMove(m1, m2, m3, m4) { if(isCodeRunning) moveHistory.push({ type: 'move', m1: parseInt(m1), m2: parseInt(m2), m3: parseInt(m3), m4: parseInt(m4) }); }
         function recordWait(sec) { if(isCodeRunning) moveHistory.push({ type: 'wait', sec: parseFloat(sec) }); }
 
         async function goHomeSequence() {
             for (let i = moveHistory.length - 1; i >= 0; i--) {
                 const action = moveHistory[i];
                 if (action.type === 'wait') await new Promise(r => setTimeout(r, action.sec * 1000));
-                else if (action.type === 'move') await sendDrivePacket(-action.l, -action.r);
+                else if (action.type === 'move') await sendDrivePacket(-action.m1, -action.m2, -action.m3, -action.m4);
             }
-            await sendDrivePacket(0, 0); moveHistory = [];
+            await sendDrivePacket(0, 0, 0, 0); moveHistory = [];
         }
 
         window.toggleRunState = function() { if(isCodeRunning) stopCode(); else runCode(); };
@@ -1034,7 +1205,7 @@
             finally { if(isCodeRunning) stopCode(); }
         };
         window.stopCode = function() { 
-            sendDrivePacket(0,0); isCodeRunning = false;
+            sendDrivePacket(0,0,0,0); isCodeRunning = false;
             globalRunBtn.classList.remove('running'); runIcon.classList.remove('fa-stop'); runIcon.classList.add('fa-play'); runIcon.classList.remove('ml-0');
         };
 
