@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RoboControl Car (Final)</title>
+    <title>RoboControl Car (Final Refined)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -82,18 +82,18 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
 
-        /* --- QUAD JOYSTICK (+40% SIZE) --- */
+        /* --- QUAD JOYSTICK (REVERTED TO 140px & CENTERED) --- */
         .joy-quad-wrapper { display: flex; flex-direction: column; gap: 30px; align-items: center; }
         .joy-quad-label { font-size: 14px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
         
-        /* 140px = 100px * 1.4 */
+        /* 140px (Reverted) */
         .joy-quad-container { width: 140px; height: 140px; position: relative; }
         
         .joy-quad-base { 
             width: 100%; height: 100%; 
             background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%); 
             border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 20px; /* More rectangular for vertical feel */
+            border-radius: 20px; 
             box-shadow: inset 0 0 15px rgba(0,0,0,0.8); 
             position: relative; touch-action: none; 
         }
@@ -102,7 +102,7 @@
             background: rgba(255,255,255,0.05); transform: translateX(-50%);
         }
         
-        /* 56px = 40px * 1.4 */
+        /* 56px (Reverted) */
         .joy-quad-stick { position: absolute; width: 56px; height: 56px; background: radial-gradient(circle at 30% 30%, #a855f7, #7e22ce); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; pointer-events: none; }
         .joy-quad-stick.snap { transition: transform 0.2s; }
 
@@ -112,7 +112,7 @@
             top: 64px; 
             left: 0; 
             right: 0; 
-            bottom: 64px; /* Повернуто 64px */
+            bottom: 64px; 
             background-color: #0f172a !important; 
         }
         
@@ -122,20 +122,40 @@
         .blocklyTreeLabel { font-family: 'Segoe UI', sans-serif; font-weight: 700; font-size: 13px !important; }
         .blocklyToolboxDiv::-webkit-scrollbar, .blocklyFlyoutScrollbar, .blocklyScrollbarHandle, .blocklyScrollbarBackground, .blocklyZoom { display: none !important; }
 
-        /* --- SENSOR DASHBOARD --- */
+        /* --- SENSOR DASHBOARD (FIXED WRAPPING) --- */
         .sensor-dashboard {
-            position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+            position: absolute; 
+            top: 80px; 
+            left: 45%; /* Shifted left by 5% */
+            transform: translateX(-50%);
+            
+            width: 98%; /* Max width to prevent wrapping */
+            max-width: 600px;
+            
             background: rgba(15, 23, 42, 0.95);
             border: 1px solid rgba(52, 211, 153, 0.3);
             border-radius: 12px;
-            padding: 8px 16px;
-            display: flex; gap: 16px;
+            padding: 6px 4px; /* Minimal padding */
+            display: flex; 
+            justify-content: space-evenly;
+            gap: 2px;
             z-index: 30;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        .sensor-item { display: flex; flex-direction: column; align-items: center; }
-        .sensor-label { font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
-        .sensor-value { font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; color: #34d399; }
+        .sensor-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-width: 60px; /* Ensure minimum width */
+        }
+        .sensor-label { 
+            font-size: 9px; /* Smaller font */
+            color: #94a3b8; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            white-space: nowrap; /* CRITICAL: Prevents line breaks */
+        }
+        .sensor-value { font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; color: #34d399; }
 
         /* --- RUN BUTTON --- */
         .run-fab { 
@@ -1174,7 +1194,7 @@
         });
 
         var workspace = Blockly.inject('blocklyDiv', {
-            toolbox: document.getElementById('toolbox'), theme: CustomTheme, renderer: 'zelos', horizontalLayout: true, toolboxPosition: 'end', grid: { spacing: 30, length: 3, colour: '#475569', snap: true }, zoom: { controls: false, wheel: true, startScale: 0.9, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 }, trashcan: true, move: { scrollbars: false, drag: true, wheel: true }
+            toolbox: document.getElementById('toolbox'), theme: CustomTheme, renderer: 'zelos', horizontalLayout: true, toolboxPosition: 'end', grid: { spacing: 50, length: 3, colour: '#475569', snap: true }, zoom: { controls: false, wheel: true, startScale: 0.65, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2, pinch: true }, trashcan: true, move: { scrollbars: false, drag: true, wheel: true }
         });
         
         setTimeout(() => {
@@ -1291,8 +1311,9 @@
             init: function() { 
                 this.appendDummyInput()
                     .appendField(new Blockly.FieldImage("https://img.icons8.com/ios-glyphs/30/ffffff/sensor.png", 20, 20, "*"))
-                    .appendField("Сенсор")
-                    .appendField(new Blockly.FieldDropdown([["Порт 1","0"], ["Порт 2","1"], ["Порт 3","2"], ["Порт 4","3"]]), "SENS");
+                    .appendField(new Blockly.FieldDropdown([["📏", "DIST"], ["💡", "LIGHT"], ["👆", "TOUCH"]]), "TYPE")
+                    .appendField("Порт")
+                    .appendField(new Blockly.FieldDropdown([["1","0"], ["2","1"], ["3","2"], ["4","3"]]), "SENS");
                 this.setOutput(true, "Number"); 
                 this.setColour(180); 
             } 
@@ -1339,7 +1360,9 @@
             if(typeof isConnected !== 'undefined' && !isConnected) { alert('Спочатку підключіться до Bluetooth!'); return; }
             isCodeRunning = true; moveHistory = [];
             globalRunBtn.classList.add('running'); runIcon.classList.remove('fa-play'); runIcon.classList.add('fa-stop'); runIcon.classList.add('ml-0');
-            const code = javascript.javascriptGenerator.workspaceToCode(workspace);
+            
+            // Define variable 'x' if not exists to prevent errors in generated code if user uses it
+            const code = "var x; " + javascript.javascriptGenerator.workspaceToCode(workspace);
             
             // Log code for debugging
             console.log("Generated Code:", code);
@@ -1399,6 +1422,13 @@
             
             input.focus();
         });
+        
+        // Auto-create variable 'x' on load
+        setTimeout(() => {
+             if (workspace) {
+                 workspace.createVariable('x');
+             }
+        }, 1000);
 
         // Expose functions for generated code
         window.sendDrivePacket = sendDrivePacket;
