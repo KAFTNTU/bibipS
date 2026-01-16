@@ -101,8 +101,20 @@
         .blocklyTreeLabel { font-family: 'Segoe UI', sans-serif; font-weight: 700; font-size: 13px !important; }
         .blocklyToolboxDiv::-webkit-scrollbar, .blocklyFlyoutScrollbar, .blocklyScrollbarHandle, .blocklyScrollbarBackground, .blocklyZoom { display: none !important; }
 
-        /* --- RUN BUTTON --- */
-        .run-fab { position: absolute; bottom: 240px; right: 20px; width: 80px; height: 80px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); background: #22c55e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* --- RUN BUTTON (MODIFIED POSITION) --- */
+        .run-fab { 
+            position: absolute; 
+            bottom: 240px; 
+            right: 20px; 
+            width: 80px; height: 80px; 
+            border-radius: 50%; 
+            border: 4px solid rgba(255,255,255,0.1); 
+            background: #22c55e; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; z-index: 50; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
         .run-fab:active { transform: scale(0.9); }
         .run-fab.running { background: #ef4444; animation: pulse-red 2s infinite; }
         .run-fab i { font-size: 32px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
@@ -306,7 +318,7 @@
 
             </div>
             
-            <div class="bg-black/40 px-4 py-2 rounded text-xs font-mono text-purple-400 border border-slate-800 mb-4">
+            <div class="absolute bottom-32 bg-black/80 px-6 py-2 rounded-full text-xs font-mono text-purple-400 border border-slate-700 shadow-lg z-20">
                 HEX: <span id="quadPacketHex">--</span>
             </div>
         </section>
