@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RoboControl Car (Pro SLIP)</title>
+    <title>RoboControl Car (ABCD & Ports)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -87,7 +87,20 @@
         /* 140px = 100px * 1.4 */
         .joy-quad-container { width: 140px; height: 140px; position: relative; }
         
-        .joy-quad-base { width: 100%; height: 100%; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 80%); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); position: relative; touch-action: none; }
+        /* Modified Base for Linear Movement Hint */
+        .joy-quad-base { 
+            width: 100%; height: 100%; 
+            background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 20px; /* More rectangular for vertical feel */
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8); 
+            position: relative; touch-action: none; 
+        }
+        /* Vertical Track Line */
+        .joy-quad-base::before {
+            content: ''; position: absolute; top: 10%; bottom: 10%; left: 50%; width: 2px;
+            background: rgba(255,255,255,0.05); transform: translateX(-50%);
+        }
         
         /* 56px = 40px * 1.4 */
         .joy-quad-stick { position: absolute; width: 56px; height: 56px; background: radial-gradient(circle at 30% 30%, #a855f7, #7e22ce); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; pointer-events: none; }
@@ -100,6 +113,21 @@
         .blocklyTreeRow { height: 48px !important; padding: 0 15px !important; margin: 0 4px !important; border-radius: 10px !important; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 1px solid transparent; }
         .blocklyTreeLabel { font-family: 'Segoe UI', sans-serif; font-weight: 700; font-size: 13px !important; }
         .blocklyToolboxDiv::-webkit-scrollbar, .blocklyFlyoutScrollbar, .blocklyScrollbarHandle, .blocklyScrollbarBackground, .blocklyZoom { display: none !important; }
+
+        /* --- SENSOR DASHBOARD (NEW) --- */
+        .sensor-dashboard {
+            position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: 12px;
+            padding: 8px 16px;
+            display: flex; gap: 16px;
+            z-index: 30;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .sensor-item { display: flex; flex-direction: column; align-items: center; }
+        .sensor-label { font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
+        .sensor-value { font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; color: #34d399; }
 
         /* --- RUN BUTTON (MODIFIED POSITION) --- */
         .run-fab { 
@@ -250,9 +278,27 @@
         <!-- --- VIEW 2: BUILDER (SCRATCH) --- -->
         <section id="view-builder" class="absolute inset-0 flex flex-col hidden opacity-0 transition-opacity duration-300">
             
-            <div class="h-10 bg-slate-800/90 mt-2 mx-2 rounded-lg flex items-center justify-between px-4 border border-slate-700 z-10 shadow-lg absolute top-4 right-4 left-4 sm:left-auto sm:w-auto">
-                <span class="text-xs text-slate-400 font-bold"><i class="fa-solid fa-eye mr-2"></i>S:</span>
-                <span id="sensorValDisplay" class="font-mono text-emerald-400 font-bold text-lg ml-2">--</span>
+            <!-- Sensor Dashboard (NEW) -->
+            <div class="sensor-dashboard" id="sensorDashboard">
+                <div class="sensor-item">
+                    <span class="sensor-label">Port 1</span>
+                    <span id="valP1" class="sensor-value">0</span>
+                </div>
+                <div class="w-px bg-slate-700"></div>
+                <div class="sensor-item">
+                    <span class="sensor-label">Port 2</span>
+                    <span id="valP2" class="sensor-value">0</span>
+                </div>
+                <div class="w-px bg-slate-700"></div>
+                <div class="sensor-item">
+                    <span class="sensor-label">Port 3</span>
+                    <span id="valP3" class="sensor-value">0</span>
+                </div>
+                <div class="w-px bg-slate-700"></div>
+                <div class="sensor-item">
+                    <span class="sensor-label">Port 4</span>
+                    <span id="valP4" class="sensor-value">0</span>
+                </div>
             </div>
 
             <!-- Blockly Div -->
@@ -269,17 +315,17 @@
              <div class="absolute top-0 w-full h-12 bg-slate-900/50 flex justify-between items-center px-6 border-b border-white/5 backdrop-blur-sm z-10">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
-                    <span class="text-xs text-purple-400 font-bold tracking-[0.2em] uppercase">4 Motor Control</span>
+                    <span class="text-xs text-purple-400 font-bold tracking-[0.2em] uppercase">4 Motor Control (ABCD)</span>
                 </div>
             </div>
 
             <!-- 4 JOYSTICK GRID -->
             <div class="w-full h-full flex items-center justify-center gap-8 px-4 pt-10">
                 
-                <!-- LEFT GROUP (M1, M3) -->
+                <!-- LEFT GROUP (A, C) -->
                 <div class="joy-quad-wrapper">
                     <div>
-                        <div class="joy-quad-label">M1 (Перед)</div>
+                        <div class="joy-quad-label">Motor A</div>
                         <div id="joy1-container" class="joy-quad-container">
                             <div id="joy1-base" class="joy-quad-base">
                                 <div id="joy1-stick" class="joy-quad-stick snap"></div>
@@ -287,7 +333,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="joy-quad-label">M3 (Зад)</div>
+                        <div class="joy-quad-label">Motor C</div>
                         <div id="joy3-container" class="joy-quad-container">
                             <div id="joy3-base" class="joy-quad-base">
                                 <div id="joy3-stick" class="joy-quad-stick snap"></div>
@@ -296,10 +342,10 @@
                     </div>
                 </div>
 
-                <!-- RIGHT GROUP (M2, M4) -->
+                <!-- RIGHT GROUP (B, D) -->
                 <div class="joy-quad-wrapper">
                     <div>
-                        <div class="joy-quad-label">M2 (Перед)</div>
+                        <div class="joy-quad-label">Motor B</div>
                         <div id="joy2-container" class="joy-quad-container">
                             <div id="joy2-base" class="joy-quad-base">
                                 <div id="joy2-stick" class="joy-quad-stick snap"></div>
@@ -307,7 +353,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="joy-quad-label">M4 (Зад)</div>
+                        <div class="joy-quad-label">Motor D</div>
                         <div id="joy4-container" class="joy-quad-container">
                             <div id="joy4-base" class="joy-quad-base">
                                 <div id="joy4-stick" class="joy-quad-stick snap"></div>
@@ -318,7 +364,7 @@
 
             </div>
             
-            <div class="absolute bottom-32 bg-black/80 px-6 py-2 rounded-full text-xs font-mono text-purple-400 border border-slate-700 shadow-lg z-20">
+            <div class="absolute bottom-48 bg-black/80 px-6 py-2 rounded-full text-xs font-mono text-purple-400 border border-slate-700 shadow-lg z-20">
                 HEX: <span id="quadPacketHex">--</span>
             </div>
         </section>
@@ -480,38 +526,6 @@
                         <next>
                             <block type="go_home"></block>
                         </next>
-                    </block>
-                </next>
-            </block>
-
-            <!-- Збірка: Їзда квадратом (Square) -->
-            <block type="start_hat">
-                <next>
-                    <block type="controls_repeat_ext">
-                        <value name="TIMES"><shadow type="math_number"><field name="NUM">4</field></shadow></value>
-                        <statement name="DO">
-                            <block type="robot_move">
-                                <value name="L"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                                <value name="R"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                                <next>
-                                    <block type="wait_seconds">
-                                        <field name="SECONDS">1</field>
-                                        <next>
-                                            <block type="robot_move">
-                                                <value name="L"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-                                                <value name="R"><shadow type="math_number"><field name="NUM">-100</field></shadow></value>
-                                                <next>
-                                                    <block type="wait_seconds">
-                                                        <field name="SECONDS">0.5</field>
-                                                    </block>
-                                                </next>
-                                            </block>
-                                        </next>
-                                    </block>
-                                </next>
-                            </block>
-                        </statement>
-                        <next><block type="robot_stop"></block></next>
                     </block>
                 </next>
             </block>
@@ -708,6 +722,13 @@
                 log(`RX SENS: [${data.join(', ')}]`, 'rx');
                 // Update global for blocks
                 window.sensorData = data;
+                
+                // UPDATE REAL-TIME DASHBOARD (P1-P4)
+                if(document.getElementById('valP1')) document.getElementById('valP1').innerText = data[0];
+                if(document.getElementById('valP2')) document.getElementById('valP2').innerText = data[1];
+                if(document.getElementById('valP3')) document.getElementById('valP3').innerText = data[2];
+                if(document.getElementById('valP4')) document.getElementById('valP4').innerText = data[3];
+
             } else {
                  const str = new TextDecoder().decode(new Uint8Array(data)).trim();
                  log(`RX RAW (${data.length}b): ${hexStr} / "${str}"`, 'rx');
@@ -1005,7 +1026,7 @@
         window.addEventListener('mousemove', moveJoy); window.addEventListener('touchmove', moveJoy, {passive:false});
 
         // ============================================
-        // 4 MOTOR (QUAD) JOYSTICK LOGIC
+        // 4 MOTOR (QUAD) JOYSTICK LOGIC (UPDATED: VERTICAL ONLY)
         // ============================================
         
         const quadState = { m1:0, m2:0, m3:0, m4:0 };
@@ -1021,19 +1042,20 @@
 
             function update(cx, cy) {
                 const rect = base.getBoundingClientRect();
-                const dx = cx - (rect.left + rect.width/2); 
+                // We ignore X-axis delta (dx) to lock horizontal movement
                 const dy = cy - (rect.top + rect.height/2);
-                const dist = Math.min(Math.hypot(dx, dy), maxDist);
-                const angle = Math.atan2(dy, dx);
                 
-                const mx = Math.cos(angle) * dist; 
-                const my = Math.sin(angle) * dist;
+                // Clamp Y movement to maxDist
+                let my = dy;
+                if(my > maxDist) my = maxDist;
+                if(my < -maxDist) my = -maxDist;
                 
-                stick.style.transform = `translate(-50%, -50%) translate(${mx}px, ${my}px)`;
+                // Stick only moves vertically (0px on X)
+                stick.style.transform = `translate(-50%, -50%) translate(0px, ${my}px)`;
                 
-                // We map Y-axis to speed (Up = positive, Down = negative)
-                // Normalize 0-100 based on maxDist
-                let speed = Math.round((my/maxDist)*100) * -1; // Invert Y
+                // Calculate Speed (-100 to 100)
+                // Up is Negative Y in screen coords, but we want Up = Positive Speed
+                let speed = Math.round((my/maxDist)*100) * -1; 
                 quadState[`m${id}`] = speed;
             }
 
@@ -1152,11 +1174,11 @@
         Blockly.Blocks['move_4_motors'] = { 
             init: function() { 
                 this.appendDummyInput()
-                    .appendField("🚙 4 Мотори")
-                    .appendField("1:").appendField(new Blockly.FieldTextInput("100"), "M1")
-                    .appendField("2:").appendField(new Blockly.FieldTextInput("100"), "M2")
-                    .appendField("3:").appendField(new Blockly.FieldTextInput("100"), "M3")
-                    .appendField("4:").appendField(new Blockly.FieldTextInput("100"), "M4");
+                    .appendField("🚙 4 Мотори (ABCD)")
+                    .appendField("A:").appendField(new Blockly.FieldTextInput("100"), "M1")
+                    .appendField("B:").appendField(new Blockly.FieldTextInput("100"), "M2")
+                    .appendField("C:").appendField(new Blockly.FieldTextInput("100"), "M3")
+                    .appendField("D:").appendField(new Blockly.FieldTextInput("100"), "M4");
                 this.setPreviousStatement(true); 
                 this.setNextStatement(true); 
                 this.setColour(260); 
@@ -1172,7 +1194,7 @@
             init: function() { 
                 this.appendDummyInput()
                     .appendField("⚙️ Мотор")
-                    .appendField(new Blockly.FieldDropdown([["1","1"], ["2","2"], ["3","3"], ["4","4"]]), "MOTOR")
+                    .appendField(new Blockly.FieldDropdown([["A","1"], ["B","2"], ["C","3"], ["D","4"]]), "MOTOR")
                     .appendField("Шв:")
                     .appendField(new Blockly.FieldTextInput("100"), "SPEED");
                 this.setPreviousStatement(true); 
@@ -1203,8 +1225,8 @@
         Blockly.Blocks['sensor_get'] = { 
             init: function() { 
                 this.appendDummyInput()
-                    .appendField("📏 Відстань Сенсора")
-                    .appendField(new Blockly.FieldDropdown([["1","0"], ["2","1"], ["3","2"], ["4","3"]]), "SENS");
+                    .appendField("📏 Відстань (Порт)")
+                    .appendField(new Blockly.FieldDropdown([["Порт 1","0"], ["Порт 2","1"], ["Порт 3","2"], ["Порт 4","3"]]), "SENS");
                 this.setOutput(true, "Number"); 
                 this.setColour(180); 
             } 
